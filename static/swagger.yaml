@@ -1,0 +1,605 @@
+swagger: '2.0'
+info:
+  title: "Ecommerce API"
+  description: "API to manage ecommerce interactions"
+  version: "1.0.0"
+host: "127.0.0.1:5000"
+schemes:
+  - "http"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: "Enter 'Bearer ' followed by your JWT token"
+
+paths:
+  /customers/login:
+    post:
+      tags:
+        - Customers
+      summary: "Login Endpoint (generates token)"
+      description: "Endpoint for user authentication, and token generation"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Credentials for login"
+          required: true
+          schema:
+            $ref: "#/definitions/LoginPayload"
+      responses:
+        200:
+          description: "Login Successful"
+          schema:
+            $ref: "#/definitions/LoginResponse"
+          examples:
+            application/json:
+              auth_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjIyNzcwMjEsImlhdCI6MTcyMjI3MzQyMSwic3ViIjoyLCJyb2xlIjoiYWRtaW4ifQ.jOih_f5IORTpNTM0x4Y6KYn8yB8GPgs4kxKeyLQXB8E"
+              message: "Successfully logged in"
+              status: "success"
+
+  /customers:
+    get:
+      tags:
+        - Customers
+      summary: "Returns all Customers"
+      description: "Returns all customers' information (requires token)"
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Retrieved Customers Successfully"
+          schema:
+            $ref: "#/definitions/AllCustomers"
+    post:
+      tags:
+        - Customers
+      summary: "Add a new Customer"
+      description: "Endpoint to add a new customer (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Customer data"
+          required: true
+          schema:
+            $ref: "#/definitions/Customer"
+      responses:
+        201:
+          description: "Customer Added Successfully"
+          schema:
+            $ref: "#/definitions/Customer"
+
+  /customers/{id}:
+    get:
+      tags:
+        - Customers
+      summary: "Get a Customer by ID"
+      description: "Returns a single customer's information (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Retrieved Customer Successfully"
+          schema:
+            $ref: "#/definitions/Customer"
+    put:
+      tags:
+        - Customers
+      summary: "Update a Customer"
+      description: "Update a customer's information (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+        - in: "body"
+          name: "body"
+          description: "Updated customer data"
+          required: true
+          schema:
+            $ref: "#/definitions/Customer"
+      responses:
+        200:
+          description: "Customer Updated Successfully"
+          schema:
+            $ref: "#/definitions/Customer"
+    delete:
+      tags:
+        - Customers
+      summary: "Delete a Customer"
+      description: "Delete a customer's information (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Customer Deleted Successfully"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+
+  /customers/p:
+    get:
+      tags:
+        - Customers
+      summary: "Paginate Customers"
+      description: "Returns paginated customers' information (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "page"
+          in: "query"
+          required: true
+          type: "integer"
+        - name: "per_page"
+          in: "query"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Retrieved Paginated Customers Successfully"
+          schema:
+            $ref: "#/definitions/AllCustomers"
+
+  /orders:
+    post:
+      tags:
+        - Orders
+      summary: "Add a new Order"
+      description: "Endpoint to add a new order (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Order data"
+          required: true
+          schema:
+            $ref: "#/definitions/Order"
+      responses:
+        201:
+          description: "Order Added Successfully"
+          schema:
+            $ref: "#/definitions/Order"
+    
+  /orders/from_cart:
+    post:
+      tags:
+        - Orders
+      summary: "Add a new Order from Cart"
+      description: "Endpoint to add a new order from the shopping cart (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Customer ID for the order"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              customer_id:
+                type: "integer"
+                description: "Customer ID"
+      responses:
+        201:
+          description: "Order Added Successfully"
+          schema:
+            $ref: "#/definitions/Order"
+
+  /orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: "Get Order Items"
+      description: "Returns items in an order (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Retrieved Order Items Successfully"
+          schema:
+            $ref: "#/definitions/OrderItems"
+
+  /orders/track/{id}:
+    get:
+      tags:
+        - Orders
+      summary: "Track an Order"
+      description: "Returns tracking information for an order (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Retrieved Order Tracking Successfully"
+          schema:
+            $ref: "#/definitions/OrderTracking"
+
+  /orders/p:
+    get:
+      tags:
+        - Orders
+      summary: "Paginate Orders"
+      description: "Returns paginated orders' information (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "page"
+          in: "query"
+          required: true
+          type: "integer"
+        - name: "per_page"
+          in: "query"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Retrieved Paginated Orders Successfully"
+          schema:
+            $ref: "#/definitions/AllOrders"
+
+  /products:
+    get:
+      tags:
+        - Products
+      summary: "Returns all Products"
+      description: "Returns all products' information (requires token)"
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Retrieved Products Successfully"
+          schema:
+            $ref: "#/definitions/AllProducts"
+    post:
+      tags:
+        - Products
+      summary: "Add a new Product"
+      description: "Endpoint to add a new product (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Product data"
+          required: true
+          schema:
+            $ref: "#/definitions/Product"
+      responses:
+        201:
+          description: "Product Added Successfully"
+          schema:
+            $ref: "#/definitions/Product"
+
+  /products/{id}:
+    get:
+      tags:
+        - Products
+      summary: "Get a Product by ID"
+      description: "Returns a single product's information (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Retrieved Product Successfully"
+          schema:
+            $ref: "#/definitions/Product"
+    put:
+      tags:
+        - Products
+      summary: "Update a Product"
+      description: "Update a product's information (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+        - in: "body"
+          name: "body"
+          description: "Updated product data"
+          required: true
+          schema:
+            $ref: "#/definitions/Product"
+      responses:
+        200:
+          description: "Product Updated Successfully"
+          schema:
+            $ref: "#/definitions/Product"
+    delete:
+      tags:
+        - Products
+      summary: "Delete a Product"
+      description: "Delete a product's information (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Product Deleted Successfully"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+
+  /products/p:
+    get:
+      tags:
+        - Products
+      summary: "Paginate Products"
+      description: "Returns paginated products' information (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "page"
+          in: "query"
+          required: true
+          type: "integer"
+        - name: "per_page"
+          in: "query"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Retrieved Paginated Products Successfully"
+          schema:
+            $ref: "#/definitions/AllProducts"
+
+  /cart/add:
+    post:
+      tags:
+        - Shopping Cart
+      summary: "Add Product to Cart"
+      description: "Add a product to the shopping cart (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Cart data"
+          required: true
+          schema:
+            $ref: "#/definitions/ShoppingCart"
+      responses:
+        201:
+          description: "Product Added to Cart Successfully"
+          schema:
+            $ref: "#/definitions/ShoppingCart"
+
+  /cart/remove:
+    post:
+      tags:
+        - Shopping Cart
+      summary: "Remove Product from Cart"
+      description: "Remove a product from the shopping cart (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Cart data"
+          required: true
+          schema:
+            $ref: "#/definitions/ShoppingCart"
+      responses:
+        200:
+          description: "Product Removed from Cart Successfully"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+
+  /cart/{customer_id}:
+    get:
+      tags:
+        - Shopping Cart
+      summary: "Get Cart Items"
+      description: "Get all items in the shopping cart for a customer (requires token)"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: "customer_id"
+          in: "path"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Retrieved Cart Items Successfully"
+          schema:
+            $ref: "#/definitions/ShoppingCartItems"
+
+definitions:
+  LoginPayload:
+    type: "object"
+    properties:
+      username:
+        type: "string"
+        description: "Customer username"
+      password:
+        type: "string"
+        description: "Customer password"
+    required:
+      - "username"
+      - "password"
+
+  LoginResponse:
+    type: "object"
+    properties:
+      auth_token:
+        type: "string"
+        description: "Authorization Token"
+      message:
+        type: "string"
+        description: "Successfully Logged In"
+      status:
+        type: "string"
+        description: "Success"
+
+  Customer:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        description: "Customer ID"
+      customer_name:
+        type: "string"
+        description: "Customer Name"
+      email:
+        type: "string"
+        description: "Customer Email"
+      phone:
+        type: "string"
+        description: "Customer Phone"
+      username:
+        type: "string"
+        description: "Customer Username"
+      password:
+        type: "string"
+        description: "Customer Password"
+      role_id:
+        type: "integer"
+        description: "Customer Role ID"
+    required:
+      - "customer_name"
+      - "email"
+      - "phone"
+      - "username"
+      - "password"
+      - "role_id"
+
+  AllCustomers:
+    type: "array"
+    items:
+      $ref: "#/definitions/Customer"
+
+  Product:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        description: "Product ID"
+      product_name:
+        type: "string"
+        description: "Product Name"
+      price:
+        type: "float"
+        description: "Product Price"
+    required:
+      - "product_name"
+      - "price"
+
+  AllProducts:
+    type: "array"
+    items:
+      $ref: "#/definitions/Product"
+
+  Order:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        description: "Order ID"
+      customer_id:
+        type: "integer"
+        description: "Customer ID"
+      order_date:
+        type: "string"
+        format: "date"
+        description: "Order Date"
+      expected_delivery_date:
+        type: "string"
+        format: "date"
+        description: "Expected Delivery Date"
+    required:
+      - "customer_id"
+      - "order_date"
+
+  AllOrders:
+    type: "array"
+    items:
+      $ref: "#/definitions/Order"
+
+  OrderItems:
+    type: "array"
+    items:
+      $ref: "#/definitions/Product"
+
+  OrderTracking:
+    type: "object"
+    properties:
+      order_id:
+        type: "integer"
+        description: "Order ID"
+      status:
+        type: "string"
+        description: "Order Status"
+      expected_delivery_date:
+        type: "string"
+        format: "date"
+        description: "Expected Delivery Date"
+
+  ShoppingCart:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        description: "Cart ID"
+      customer_id:
+        type: "integer"
+        description: "Customer ID"
+      product_id:
+        type: "integer"
+        description: "Product ID"
+      quantity:
+        type: "integer"
+        description: "Quantity"
+    required:
+      - "customer_id"
+      - "product_id"
+      - "quantity"
+
+  ShoppingCartItems:
+    type: "array"
+    items:
+      $ref: "#/definitions/ShoppingCart"
